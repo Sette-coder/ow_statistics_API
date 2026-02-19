@@ -22,21 +22,31 @@ public class UsersController : ControllerBase
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateUserRequest request)
     {
+        GenericResponse response = new GenericResponse { ok=false, ResponseMessage = "" };
+        
         if (string.IsNullOrWhiteSpace(request.Username))
         {
-            return BadRequest("Username Missing");
+            response.ResponseMessage = "Username Missing";
+            return BadRequest(JsonSerializer.Serialize(response));
         }
 
         if (string.IsNullOrWhiteSpace(request.Password))
         {
-            return BadRequest("Password Missing");
+            response.ResponseMessage = "Password Missing";
+            return BadRequest(JsonSerializer.Serialize(response));
         }
 
         if (_db.AppUsers.Any(u => u.Email == request.Email))
-            return Conflict("User With this email already exists");
+        {
+            response.ResponseMessage = "User With this email already exists";
+            return Conflict(JsonSerializer.Serialize(response));
+        }
 
         if (_db.AppUsers.Any(u => u.Username == request.Username))
-            return Conflict("User With this username already exists");
+        {
+            response.ResponseMessage = "User With this username already exists";
+            return Conflict(JsonSerializer.Serialize(response));
+        }
 
         var user = new AppUser
         {
@@ -48,7 +58,8 @@ public class UsersController : ControllerBase
 
         _db.AppUsers.Add(user);
         _db.SaveChanges();
-        var response = new { user.Id, user.Username, user.Email };
+        response.ResponseMessage = "User Create Successfully";
+        response.ok = true;
         return Ok(JsonSerializer.Serialize(response));
     }
 
@@ -110,4 +121,10 @@ public class LoginResponse
     public string Username { get; set; } = "";
     public string UserEmail { get; set; } = "";
     public string LoginMessage { get; set; } = "";
+}
+
+public class GenericResponse
+{
+    public bool ok { get; set; } = false;
+    public string ResponseMessage { get; set; } = "";
 }

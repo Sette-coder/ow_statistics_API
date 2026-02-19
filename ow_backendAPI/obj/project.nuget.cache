@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4cNWUv1HW4M=",
+  "dgSpecHash": "3Q6z7T7TSP4=",
   "success": true,
-  "projectFilePath": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_backendAPI/ow_backendAPI/ow_backendAPI.csproj",
+  "projectFilePath": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/ow_backendAPI/ow_backendAPI.csproj",
   "expectedPackageFiles": [
     "/home/thaseven/.nuget/packages/microsoft.aspnetcore.openapi/10.0.1/microsoft.aspnetcore.openapi.10.0.1.nupkg.sha512",
     "/home/thaseven/.nuget/packages/microsoft.entityframeworkcore/10.0.3/microsoft.entityframeworkcore.10.0.3.nupkg.sha512",

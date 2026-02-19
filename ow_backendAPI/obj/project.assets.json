@@ -267,11 +267,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_backendAPI/ow_backendAPI/ow_backendAPI.csproj",
+      "projectUniqueName": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/ow_backendAPI/ow_backendAPI.csproj",
       "projectName": "ow_backendAPI",
-      "projectPath": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_backendAPI/ow_backendAPI/ow_backendAPI.csproj",
+      "projectPath": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/ow_backendAPI/ow_backendAPI.csproj",
       "packagesPath": "/home/thaseven/.nuget/packages/",
-      "outputPath": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_backendAPI/ow_backendAPI/obj/",
+      "outputPath": "/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/ow_backendAPI/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/thaseven/.nuget/NuGet/NuGet.Config"
