@@ -1,0 +1,6 @@
+@ow_backendAPI_HostAddress = http://localhost:5144
+
+GET {{ow_backendAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ow_backendAPI", "ow_backendAPI\ow_backendAPI.csproj", "{B09AF5A8-2239-442B-A265-44528FEC8E0E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B09AF5A8-2239-442B-A265-44528FEC8E0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B09AF5A8-2239-442B-A265-44528FEC8E0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B09AF5A8-2239-442B-A265-44528FEC8E0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B09AF5A8-2239-442B-A265-44528FEC8E0E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
