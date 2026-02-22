@@ -48,7 +48,7 @@ jobs:
             EOF
             
             sudo chmod 600 /etc/.production.env
-            sudo systemctl restart ow_statisticsAPI
+            sudo systemctl restart ow_statistics_API
 
       - name: Restart service
         uses: appleboy/ssh-action@v1.0.0
@@ -57,4 +57,4 @@ jobs:
           username: ${{ secrets.E2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo systemctl restart ow_statisticsAPI
+            sudo systemctl restart ow_statistics_API
