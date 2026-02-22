@@ -28,7 +28,7 @@ var connString = new NpgsqlConnectionStringBuilder
     SslMode = SslMode.VerifyFull,
     RootCertificate = builder.Configuration["Database:CertificateDir"],
 }.ToString();
-Console.WriteLine($"Connecting to database: {connString}");
+
 NpgsqlConnection conn = new NpgsqlConnection(connString);
 try {
     conn.Open();
@@ -55,7 +55,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 
 app.UseHttpsRedirection();
-
 app.UseCors();
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok("ok"));
 app.Run();
