@@ -29,7 +29,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "out/*"
+          source: "ow_backendAPI/bin/Release/net10.0/publish/**"
           target: "/var/www/ow_statisticsAPI"
 
       - name: Update environment variables on EC2
