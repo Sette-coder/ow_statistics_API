@@ -20,7 +20,7 @@ jobs:
       - name: Build & Publish
         run: |
           dotnet restore
-          dotnet publish -c Release -o out
+          dotnet publish -c Release
 
       - name: Deploy via SSH
         uses: appleboy/scp-action@v1.0.0
