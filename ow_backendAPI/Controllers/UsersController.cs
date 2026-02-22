@@ -22,8 +22,8 @@ public class UsersController : ControllerBase
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateUserRequest request)
     {
-        GenericResponse response = new GenericResponse { ok=false, ResponseMessage = "" };
-        
+        GenericResponse response = new GenericResponse { ok = false, ResponseMessage = "" };
+
         if (string.IsNullOrWhiteSpace(request.Username))
         {
             response.ResponseMessage = "Username Missing";
@@ -52,6 +52,7 @@ public class UsersController : ControllerBase
         {
             Username = request.Username,
             Email = request.Email,
+            Role = string.IsNullOrEmpty(request.Role) ? "Client" : request.Role,
         };
 
         user.Password = _passwordHasher.HashPassword(user, request.Password);
@@ -63,7 +64,6 @@ public class UsersController : ControllerBase
         return Ok(JsonSerializer.Serialize(response));
     }
 
-    // LOGIN EXAMPLE
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
@@ -74,7 +74,7 @@ public class UsersController : ControllerBase
         };
 
         var user = _db.AppUsers.FirstOrDefault(u => u.Username == request.UsernameOrEmail);
-        
+
         if (user == null)
         {
             user = _db.AppUsers.FirstOrDefault(u => u.Email == request.UsernameOrEmail);
@@ -93,10 +93,11 @@ public class UsersController : ControllerBase
             response.LoginMessage = "Invalid Password";
             return Unauthorized(JsonSerializer.Serialize(response));
         }
-        
+
         response.Authorized = true;
         response.Username = user.Username;
         response.UserEmail = user.Email;
+        response.Role = user.Role;
         response.LoginMessage = "Logged in!";
         return Ok(JsonSerializer.Serialize(response));
     }
@@ -107,6 +108,7 @@ public class CreateUserRequest
     public string Username { get; set; } = "";
     public string Email { get; set; } = "";
     public string Password { get; set; } = "";
+    public string Role { get; set; } = "";
 }
 
 public class LoginRequest
@@ -120,6 +122,7 @@ public class LoginResponse
     public bool Authorized { get; set; } = false;
     public string Username { get; set; } = "";
     public string UserEmail { get; set; } = "";
+    public string Role { get; set; } = "";
     public string LoginMessage { get; set; } = "";
 }
 

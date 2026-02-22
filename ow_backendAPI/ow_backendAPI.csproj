@@ -1,13 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-    </PropertyGroup>
+      <UserSecretsId>935a3354-b026-4193-b7b3-88da94bc15bb</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1"/>
+        <PackageReference Include="DotNetEnv" Version="3.1.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     </ItemGroup>

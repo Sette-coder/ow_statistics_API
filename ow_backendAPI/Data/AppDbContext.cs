@@ -10,4 +10,5 @@ public class AppDbContext:DbContext
     public DbSet<AppUser> AppUsers => Set<AppUser>();
     public DbSet<Map> Map => Set<Map>();
     public DbSet<Hero> Hero => Set<Hero>();
+    public DbSet<Match> Match => Set<Match>();
 }

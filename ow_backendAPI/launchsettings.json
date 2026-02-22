@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ow_backendAPI": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

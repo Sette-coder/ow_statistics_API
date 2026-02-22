@@ -1,0 +1,14 @@
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/ow_backendAPI
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/appsettings.Development.json
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/appsettings.json
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/ow_backendAPI.dll
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/ow_backendAPI.deps.json
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/ow_backendAPI.runtimeconfig.json
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/ow_backendAPI.pdb
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/Microsoft.AspNetCore.OpenApi.dll
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/Microsoft.EntityFrameworkCore.dll
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/Microsoft.EntityFrameworkCore.Abstractions.dll
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/Microsoft.EntityFrameworkCore.Relational.dll
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/Microsoft.OpenApi.dll
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/Npgsql.dll
+/media/thaseven/QuelloGROSSO/_JetbrainsProjects/OW_statistics/ow_statistics_API/publish/Npgsql.EntityFrameworkCore.PostgreSQL.dll
