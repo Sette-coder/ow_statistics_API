@@ -8,9 +8,9 @@ public class Map
 {
     [Key] [Column("id")] public int Id { get; set; }
 
-    [Column("name")] public string Name { get; set; }
+    [Column("name")] public string Name { get; set; } = "";
 
-    [Column("mode")] public string Mode { get; set; }
+    [Column("mode")] public string Mode { get; set; } = "";
 
-    [Column("mode_id")] public int ModeId { get; set; }
+    [Column("mode_id")] public int ModeId { get; set; } 
 }
