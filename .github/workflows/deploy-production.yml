@@ -56,6 +56,7 @@ jobs:
             Database__Name=${{ secrets.DB_NAME }}
             Database__Username=${{ secrets.DB_USERNAME }}
             ASPNETCORE_ENVIRONMENT=Production
+            ASPNETCORE_URLS=http://0.0.0.0:5000
             EOF
             
             sudo chmod 600 /etc/.production.env
