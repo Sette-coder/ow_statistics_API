@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 if (builder.Environment.IsDevelopment())
 {
     Env.Load(".local.env");
+}else if(builder.Environment.IsProduction())
+{
+    Env.Load(".production.env");
 }
 
 // Add environment variables to config

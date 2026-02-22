@@ -1,0 +1,60 @@
+name: Deploy Production to EC2
+
+on:
+  workflow_dispatch:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build & Publish
+        run: |
+          dotnet restore
+          dotnet publish -c Release -o out
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "out/*"
+          target: "/var/www/ow_statisticsAPI"
+
+      name: Update environment variables on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: deploy
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo tee /etc/.production.env > /dev/null <<EOF
+            Database__Host=${{ secrets.DB_HOSTNAME }}
+            Database__Password=${{ secrets.DB_PASSWORD }}
+            Database__Name=${{ secrets.DB_NAME }}
+            Database__Username=${{ secrets.DB_USERNAME }}
+            ASPNETCORE_ENVIRONMENT=Production
+            EOF
+            
+            sudo chmod 600 /etc/.production.env
+            sudo systemctl restart ow_statisticsAPI
+
+      - name: Restart service
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.E2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo systemctl restart ow_statisticsAPI
