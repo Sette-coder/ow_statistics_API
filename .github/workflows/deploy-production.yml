@@ -17,7 +17,18 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.103
-
+          
+      - name: Clean previous deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo rm -rf /var/www/ow_backendAPI
+            sudo mkdir -p /var/www/ow_backendAPI
+            sudo chown $USER:$USER /var/www/ow_backendAPI
+        
       - name: Build & Publish
         run: |
           dotnet restore ow_backendAPI/ow_backendAPI.csproj
@@ -30,7 +41,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "ow_backendAPI/publish/**"
-          target: "/var/www/ow_backendAPI"
+          target: "/var/www/ow_backendAPI/publish"
 
       - name: Update environment variables on EC2
         uses: appleboy/ssh-action@v1.0.0
