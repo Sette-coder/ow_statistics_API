@@ -18,12 +18,17 @@ if (builder.Environment.IsDevelopment())
 builder.Configuration.AddEnvironmentVariables();
 builder.Configuration.GetSection("Postgres");
 
-var dbHost = builder.Configuration["Database:Host"];
-var dbPassword = builder.Configuration["Database:Password"];
-var dbName = builder.Configuration["Database:Name"];
-var dbUsername = builder.Configuration["Database:Username"];
-string connString = $"Host={dbHost};Port=5432;Database={dbName};Username={dbUsername};Password={dbPassword};SSL Mode=VerifyFull;Root Certificate=./certs/global-bundle.pem";
-
+var connString = new NpgsqlConnectionStringBuilder
+{
+    Host = builder.Configuration["Database:Host"],
+    Username = builder.Configuration["Database:Username"],
+    Password = builder.Configuration["Database:Password"],
+    Database = builder.Configuration["Database:Name"],
+    Port = 5432,
+    SslMode = SslMode.VerifyFull,
+    RootCertificate = builder.Configuration["Database:CertificateDir"],
+}.ToString();
+Console.WriteLine($"Connecting to database: {connString}");
 NpgsqlConnection conn = new NpgsqlConnection(connString);
 try {
     conn.Open();
