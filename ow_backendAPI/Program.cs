@@ -24,7 +24,7 @@ var dbName = builder.Configuration["Database:Name"];
 var dbUsername = builder.Configuration["Database:Username"];
 string connString = $"Host={dbHost};Port=5432;Database={dbName};Username={dbUsername};Password={dbPassword};SSL Mode=VerifyFull;Root Certificate=./certs/global-bundle.pem";
 
-NpgsqlConnection conn = null;
+NpgsqlConnection conn = new NpgsqlConnection("");
 try {
     conn = new NpgsqlConnection(connString);
     conn.Open();
