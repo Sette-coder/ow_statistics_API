@@ -31,7 +31,7 @@ jobs:
           source: "out/*"
           target: "/var/www/ow_statisticsAPI"
 
-      name: Update environment variables on EC2
+      - name: Update environment variables on EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
