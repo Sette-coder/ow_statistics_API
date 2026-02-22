@@ -110,5 +110,5 @@ public class EmailRequest
 
 public class MatchListResponse
 {
-    public List<Match> Matches { get; set; }
+    public List<Match> Matches { get; set; } = new List<Match>();
 }
