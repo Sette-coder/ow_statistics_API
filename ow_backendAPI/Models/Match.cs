@@ -7,7 +7,7 @@ namespace ow_backendAPI.Models;
 public class Match
 {
     [Key] [Column("id")] public int Id { get; set; }
-    [Column("user_email")] public string UserEmail { get; set; } = "";
+    [Column("username")] public string Username { get; set; } = "";
     [Column("submit_time")] public string UploadTime { get; set; } = "";
     [Column("map_name")] public string MapName { get; set; } = "";
     [Column("season")] public string Season { get; set; } = "";
