@@ -1,2 +1,19 @@
+# .NET build artifacts (project folder only)
+ow_backendAPI/bin/
+ow_backendAPI/obj/
 
+# JetBrains Rider
+.idea/
+ow_backendAPI/*.sln.iml
+
+# Visual Studio (safe)
+.vs/
+*.user
+*.suo
+
+# Environment / secrets
 ow_backendAPI/.local.env
+
+# OS junk
+.DS_Store
+Thumbs.db
