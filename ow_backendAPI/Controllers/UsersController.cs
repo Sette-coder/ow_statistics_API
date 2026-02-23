@@ -7,7 +7,7 @@ using ow_backendAPI.Models;
 namespace ow_backendAPI.Controllers;
 
 [ApiController]
-[Route("api/user")]
+[Route("owstatistics/api/user")]
 public class UsersController : ControllerBase
 {
     private readonly AppDbContext _db;
