@@ -5,7 +5,7 @@ using ow_backendAPI.Models;
 
 namespace ow_backendAPI.Controllers;
 [ApiController]
-[Route("api/hero")]
+[Route("owstatistics/api/hero")]
 public class HeroController:ControllerBase
 {
     private readonly AppDbContext _db;

@@ -7,7 +7,7 @@ using ow_backendAPI.Models;
 namespace ow_backendAPI.Controllers;
 
 [ApiController]
-[Route("api/match")]
+[Route("owstatistics/api/match")]
 public class MatchController : ControllerBase
 {
     private readonly AppDbContext _db;

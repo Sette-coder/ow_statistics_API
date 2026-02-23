@@ -5,7 +5,7 @@ using ow_backendAPI.Models;
 
 namespace ow_backendAPI.Controllers;
 [ApiController]
-[Route("api/map")]
+[Route("owstatistics/api/map")]
 public class MapController:ControllerBase
 {
     private readonly AppDbContext _db;
