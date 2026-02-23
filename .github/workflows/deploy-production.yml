@@ -32,7 +32,7 @@ jobs:
       - name: Build & Publish
         run: |
           dotnet restore ow_backendAPI/ow_backendAPI.csproj
-          dotnet publish ow_backendAPI/ow_backendAPI.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+          dotnet publish ow_backendAPI/ow_backendAPI.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ow_backendAPI/publish
 
       - name: Deploy via SSH
         uses: appleboy/scp-action@v1.0.0
@@ -55,7 +55,9 @@ jobs:
             Database__Password=${{ secrets.DB_PASSWORD }}
             Database__Name=${{ secrets.DB_NAME }}
             Database__Username=${{ secrets.DB_USERNAME }}
+            Database__CertificateDir=${{ secrets.EC2_RDS_CERT_DIR }}
             ASPNETCORE_ENVIRONMENT=Production
+            ASPNETCORE_URLS=http://0.0.0.0:5000
             EOF
             
             sudo chmod 600 /etc/.production.env
