@@ -20,7 +20,7 @@ public class MatchController : ControllerBase
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateMatchRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.UserEmail)) return BadRequest("User Email is Missing");
+        if (string.IsNullOrWhiteSpace(request.Username)) return BadRequest("User Email is Missing");
         if (string.IsNullOrWhiteSpace(request.MapName)) return BadRequest("Map Name is Missing");
         if (string.IsNullOrWhiteSpace(request.Season)) return BadRequest("Map Name is Missing");
         if (string.IsNullOrWhiteSpace(request.Rank)) return BadRequest("Rank is Missing");
@@ -37,7 +37,7 @@ public class MatchController : ControllerBase
 
         var newMatch = new Match
         {
-            UserEmail = request.UserEmail,
+            Username = request.Username,
             UploadTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
             MapName = request.MapName,
             Season = request.Season,
@@ -65,27 +65,32 @@ public class MatchController : ControllerBase
         };
         return Ok(JsonSerializer.Serialize(response));
     }
-    
-    [HttpPost("get-by-email")]
-    public async Task<IActionResult> GetByEmail([FromBody] EmailRequest request)
+
+    [HttpPost("get-by-username")]
+    public async Task<IActionResult> GetByUsername([FromBody] UsernameRequest request)
     {
         var records = await _db.Match
-            .Where(match => match.UserEmail == request.UserEmail)
+            .Where(match => match.Username == request.Username)
             .ToListAsync();
-        
-        if (records.Count == 0)
-            return NotFound();
 
-        var response = new MatchListResponse();
-        response.Matches = new List<Match>(records);
+
+        var response = new MatchListResponse()
+        {
+            Matches = new List<Match>()
+        };
         
+        if (records.Count != 0)
+        {
+            response.Matches = new List<Match>(records);
+        }
+
         return Ok(JsonSerializer.Serialize(response));
     }
 }
 
 public class CreateMatchRequest
 {
-    public string UserEmail { get; set; } = "";
+    public string Username { get; set; } = "";
     public string MapName { get; set; } = "";
     public string Season { get; set; } = "";
     public string Rank { get; set; } = "";
@@ -103,9 +108,9 @@ public class CreateMatchRequest
     public string EnemyTeamNotes { get; set; } = "";
 }
 
-public class EmailRequest
+public class UsernameRequest
 {
-    public string UserEmail { get; set; } = "";
+    public string Username { get; set; } = "";
 }
 
 public class MatchListResponse
