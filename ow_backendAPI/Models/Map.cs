@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ow_backendAPI.Models;
 
-[Table("map_list", Schema = "public")]
+[Table("map_list", Schema = "data")]
 public class Map
 {
     [Key] [Column("id")] public int Id { get; set; }

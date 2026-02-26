@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ow_backendAPI.Models;
 
-[Table("game_records", Schema = "public")]
+[Table("game_records", Schema = "data")]
 public class Match
 {
     [Key] [Column("id")] public int Id { get; set; }
