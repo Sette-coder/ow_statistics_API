@@ -24,23 +24,8 @@ var connString = new NpgsqlConnectionStringBuilder
     Username = builder.Configuration["Database:Username"],
     Password = builder.Configuration["Database:Password"],
     Database = builder.Configuration["Database:Name"],
-    Port = 5432,
-    SslMode = SslMode.VerifyFull,
-    RootCertificate = builder.Configuration["Database:CertificateDir"],
+    Port = 5432
 }.ToString();
-
-NpgsqlConnection conn = new NpgsqlConnection(connString);
-try {
-    conn.Open();
-    using var cmd = new NpgsqlCommand("SELECT version();", conn);
-    Console.WriteLine(cmd.ExecuteScalar());
-} catch (Exception ex) {
-    Console.WriteLine($"Database error: {ex.Message}");
-    throw;
-} finally {
-    conn?.Close();
-    conn?.Dispose();
-}
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

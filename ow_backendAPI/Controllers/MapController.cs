@@ -6,14 +6,8 @@ using ow_backendAPI.Models;
 namespace ow_backendAPI.Controllers;
 [ApiController]
 [Route("owstatistics/api/map")]
-public class MapController:ControllerBase
+public class MapController(AppDbContext db) : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public MapController(AppDbContext db)
-    {
-        _db = db;
-    }
-
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateMapRequest request)
     {
@@ -25,7 +19,7 @@ public class MapController:ControllerBase
         {
             return BadRequest("Map Mode cannot be Default");
         }
-        if (_db.Map.Any(u => u.Name == request.Name))
+        if (db.Map.Any(u => u.Name == request.Name))
             return Conflict("Map already exists");
 
         var newMap = new Map
@@ -35,8 +29,8 @@ public class MapController:ControllerBase
             ModeId = request.ModeId
         };
         
-        _db.Map.Add(newMap);
-        _db.SaveChanges();
+        db.Map.Add(newMap);
+        db.SaveChanges();
         return Ok(JsonSerializer.Serialize(newMap));
     }
 }

@@ -8,15 +8,8 @@ namespace ow_backendAPI.Controllers;
 
 [ApiController]
 [Route("owstatistics/api/match")]
-public class MatchController : ControllerBase
+public class MatchController(AppDbContext db) : ControllerBase
 {
-    private readonly AppDbContext _db;
-
-    public MatchController(AppDbContext db)
-    {
-        _db = db;
-    }
-
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateMatchRequest request)
     {
@@ -56,8 +49,8 @@ public class MatchController : ControllerBase
             EnemyTeamNotes = request.EnemyTeamNotes
         };
 
-        _db.Match.Add(newMatch);
-        _db.SaveChanges();
+        db.Match.Add(newMatch);
+        db.SaveChanges();
         var response = new GenericResponse()
         {
             ok = true,
@@ -69,7 +62,7 @@ public class MatchController : ControllerBase
     [HttpPost("get-by-username")]
     public async Task<IActionResult> GetByUsername([FromBody] UsernameRequest request)
     {
-        var records = await _db.Match
+        var records = await db.Match
             .Where(match => match.Username == request.Username)
             .ToListAsync();
 

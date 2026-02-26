@@ -8,16 +8,9 @@ namespace ow_backendAPI.Controllers;
 
 [ApiController]
 [Route("owstatistics/api/user")]
-public class UsersController : ControllerBase
+public class UsersController(AppDbContext db) : ControllerBase
 {
-    private readonly AppDbContext _db;
-    private readonly PasswordHasher<AppUser> _passwordHasher;
-
-    public UsersController(AppDbContext db)
-    {
-        _db = db;
-        _passwordHasher = new PasswordHasher<AppUser>();
-    }
+    private readonly PasswordHasher<AppUser> _passwordHasher = new();
 
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateUserRequest request)
@@ -36,13 +29,13 @@ public class UsersController : ControllerBase
             return BadRequest(JsonSerializer.Serialize(response));
         }
 
-        if (_db.AppUsers.Any(u => u.Email == request.Email))
+        if (db.AppUsers.Any(u => u.Email == request.Email))
         {
             response.ResponseMessage = "User With this email already exists";
             return Conflict(JsonSerializer.Serialize(response));
         }
 
-        if (_db.AppUsers.Any(u => u.Username == request.Username))
+        if (db.AppUsers.Any(u => u.Username == request.Username))
         {
             response.ResponseMessage = "User With this username already exists";
             return Conflict(JsonSerializer.Serialize(response));
@@ -57,8 +50,8 @@ public class UsersController : ControllerBase
 
         user.Password = _passwordHasher.HashPassword(user, request.Password);
 
-        _db.AppUsers.Add(user);
-        _db.SaveChanges();
+        db.AppUsers.Add(user);
+        db.SaveChanges();
         response.ResponseMessage = "User Create Successfully";
         response.ok = true;
         return Ok(JsonSerializer.Serialize(response));
@@ -73,11 +66,11 @@ public class UsersController : ControllerBase
             LoginMessage = ""
         };
 
-        var user = _db.AppUsers.FirstOrDefault(u => u.Username == request.UsernameOrEmail);
+        var user = db.AppUsers.FirstOrDefault(u => u.Username == request.UsernameOrEmail);
 
         if (user == null)
         {
-            user = _db.AppUsers.FirstOrDefault(u => u.Email == request.UsernameOrEmail);
+            user = db.AppUsers.FirstOrDefault(u => u.Email == request.UsernameOrEmail);
             if (user == null)
             {
                 Console.WriteLine("USER NOT FOUND ERROR");
