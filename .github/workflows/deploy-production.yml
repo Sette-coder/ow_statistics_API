@@ -55,9 +55,8 @@ jobs:
             Database__Password=${{ secrets.DB_PASSWORD }}
             Database__Name=${{ secrets.DB_NAME }}
             Database__Username=${{ secrets.DB_USERNAME }}
-            Database__CertificateDir=${{ secrets.EC2_RDS_CERT_DIR }}
             ASPNETCORE_ENVIRONMENT=Production
-            ASPNETCORE_URLS=http://0.0.0.0:5000
+            ASPNETCORE_URLS=http://0.0.0.0:80;https://0.0.0.0:443
             EOF
             
             sudo chmod 600 /etc/.production.env

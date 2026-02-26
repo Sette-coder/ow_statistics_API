@@ -14,6 +14,11 @@ if (builder.Environment.IsDevelopment())
     Env.Load(".production.env");
 }
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000);
+});
+
 // Add environment variables to config
 builder.Configuration.AddEnvironmentVariables();
 builder.Configuration.GetSection("Postgres");
@@ -37,9 +42,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connString);
 });
 
+
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthorization();
 app.UseCors();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok("ok"));
