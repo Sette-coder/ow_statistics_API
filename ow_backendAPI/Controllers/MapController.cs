@@ -1,19 +1,14 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ow_backendAPI.Data;
 using ow_backendAPI.Models;
 
 namespace ow_backendAPI.Controllers;
 [ApiController]
 [Route("owstatistics/api/map")]
-public class MapController:ControllerBase
+public class MapController(AppDbContext db) : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public MapController(AppDbContext db)
-    {
-        _db = db;
-    }
-
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateMapRequest request)
     {
@@ -25,7 +20,7 @@ public class MapController:ControllerBase
         {
             return BadRequest("Map Mode cannot be Default");
         }
-        if (_db.Map.Any(u => u.Name == request.Name))
+        if (db.Map.Any(u => u.Name == request.Name))
             return Conflict("Map already exists");
 
         var newMap = new Map
@@ -35,9 +30,24 @@ public class MapController:ControllerBase
             ModeId = request.ModeId
         };
         
-        _db.Map.Add(newMap);
-        _db.SaveChanges();
-        return Ok(JsonSerializer.Serialize(newMap));
+        db.Map.Add(newMap);
+        db.SaveChanges();
+        return Ok(newMap);
+    }
+    
+    [HttpGet("get-all-maps")]
+    public async Task<IActionResult> GetAllMaps()
+    {
+        var response = await db.Map
+            .Select(m => new FromDatabaseMaps
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Mode = m.Mode,
+                ModeId = m.ModeId
+            })
+            .ToListAsync();
+        return Ok(response);
     }
 }
 
@@ -46,5 +56,18 @@ public class CreateMapRequest
     public string Name { get; set; } = "";
     public string Mode { get; set; } = "";
     public int ModeId { get; set; }
+}
+
+public class FromDatabaseMaps
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Mode { get; set; }
+    public int ModeId { get; set; }
+}
+
+public class FromDatabaseMapsResponse()
+{
+    public List<FromDatabaseMaps> Maps { get; set; }
 }
 

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ow_backendAPI.Models;
 
-[Table("app_users", Schema = "public")]
+[Table("app_users", Schema = "data")]
 public class AppUser
 {
     [Key] [Column("id")] public int Id { get; set; }

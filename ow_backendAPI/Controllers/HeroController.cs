@@ -1,19 +1,14 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ow_backendAPI.Data;
 using ow_backendAPI.Models;
 
 namespace ow_backendAPI.Controllers;
 [ApiController]
 [Route("owstatistics/api/hero")]
-public class HeroController:ControllerBase
+public class HeroController(AppDbContext db) : ControllerBase
 {
-    private readonly AppDbContext _db;
-    public HeroController(AppDbContext db)
-    {
-        _db = db;
-    }
-
     [HttpPost("create")]
     public IActionResult Create([FromBody] CreateHeroRequest request)
     {
@@ -25,7 +20,7 @@ public class HeroController:ControllerBase
         {
             return BadRequest("Map Mode cannot be None or is Empty");
         }
-        if (_db.Hero.Any(u => u.Name == request.Name))
+        if (db.Hero.Any(u => u.Name == request.Name))
             return Conflict("Hero already exists");
 
         var newHero = new Hero
@@ -34,9 +29,24 @@ public class HeroController:ControllerBase
             Role = request.Role,
         };
         
-        _db.Hero.Add(newHero);
-        _db.SaveChanges();
-        return Ok(JsonSerializer.Serialize(newHero));
+        db.Hero.Add(newHero);
+        db.SaveChanges();
+        return Ok(newHero);
+    }
+    
+    [HttpGet("get-all-heroes")]
+    public async Task<IActionResult> GetAllHeroes()
+    {
+        var response = await db.Hero
+            .Select(m => new FromDatabaseHeroes
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Role = m.Role,
+            })
+            .ToListAsync();
+        
+        return Ok(response);
     }
 }
 
@@ -44,5 +54,12 @@ public class CreateHeroRequest
 {
     public string Name { get; set; } = "";
     public string Role { get; set; } = "";
+}
+
+public class FromDatabaseHeroes()
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Role { get; set; }
 }
 
