@@ -1,15 +1,12 @@
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using ow_backendAPI;
 using ow_backendAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load .local.env only for Development
-if (builder.Environment.IsDevelopment())
-{
-    Env.Load(".local.env");
-}else if(builder.Environment.IsProduction())
+if(builder.Environment.IsProduction())
 {
     Env.Load(".production.env");
 }
@@ -36,14 +33,19 @@ var connString = new NpgsqlConnectionStringBuilder
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers()
-    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase);
+    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null );
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(connString);
+    options.UseNpgsql(connString, npgSqlBuilder =>
+    {
+        npgSqlBuilder.MigrationsHistoryTable("migrations", schema: "data");
+    });
 });
 
-
 var app = builder.Build();
+
+await app.ApplyMigrationsAsync();
 
 app.UseHttpsRedirection();
 app.UseRouting();

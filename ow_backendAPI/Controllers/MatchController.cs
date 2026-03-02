@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,102 +12,166 @@ namespace ow_backendAPI.Controllers;
 public class MatchController(AppDbContext db) : ControllerBase
 {
     [HttpPost("create")]
-    public IActionResult Create([FromBody] CreateMatchRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateMatchRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Username)) return BadRequest("User Email is Missing");
-        if (string.IsNullOrWhiteSpace(request.MapName)) return BadRequest("Map Name is Missing");
-        if (string.IsNullOrWhiteSpace(request.Season)) return BadRequest("Map Name is Missing");
+        if (request.UserId == -1) return BadRequest("User Id is Missing");
+        if (request.MapId == null || request.MapId == -1) return BadRequest("Map ID is Missing");
+        if (string.IsNullOrWhiteSpace(request.Season)) return BadRequest("Season is Missing");
         if (string.IsNullOrWhiteSpace(request.Rank)) return BadRequest("Rank is Missing");
         if (request.RankDivision == 0) return BadRequest("Rank Division Cannot be 0");
         if (string.IsNullOrWhiteSpace(request.MatchResult)) return BadRequest("Match Result is Missing");
-        if (string.IsNullOrWhiteSpace(request.Hero_1)) return BadRequest("First Hero is Missing");
-        if (string.IsNullOrWhiteSpace(request.TeamBan_1)) return BadRequest("First Hero Banned from Team is Missing");
-        if (string.IsNullOrWhiteSpace(request.TeamBan_2)) return BadRequest("Second Hero Banned from Team is Missing");
-        if (string.IsNullOrWhiteSpace(request.EnemyTeamBan_1))
-            return BadRequest("First Hero Banned from Enemy Team is Missing");
-        if (string.IsNullOrWhiteSpace(request.EnemyTeamBan_2))
-            return BadRequest("Second Hero Banned from Enemy Team is Missing");
+        if (request.Hero1Id == -1) return BadRequest("First Hero ID is Missing");
+        if (request.TeamBan1Id == -1) return BadRequest("First Hero Banned ID from Team is Missing");
+        if (request.TeamBan2Id == -1) return BadRequest("Second Hero Banned ID from Team is Missing");
+        if (request.EnemyTeamBan1Id == -1)
+            return BadRequest("First Hero Banned from Enemy Team ID is Missing");
+        if (request.EnemyTeamBan2Id == -1)
+            return BadRequest("Second Hero Banned from Enemy Team ID is Missing");
 
+        var user = await db.AppUsers.Where(u => u.Id == request.UserId).SingleOrDefaultAsync();
+
+        if (user == null)
+        {
+            return BadRequest("User not found");
+        }
 
         var newMatch = new Match
         {
-            Username = request.Username,
-            UploadTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
-            MapName = request.MapName,
+            UserId = user.Id,
+            SubmitTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
+            MapId = request.MapId,
             Season = request.Season,
             Rank = request.Rank,
             RankDivision = request.RankDivision,
             RankPercentage = request.RankPercentage,
-            Hero_1 = request.Hero_1,
-            Hero_2 = request.Hero_2,
-            Hero_3 = request.Hero_3,
+            Hero1Id = request.Hero1Id,
             MatchResult = request.MatchResult,
-            TeamBan_1 = request.TeamBan_1,
-            TeamBan_2 = request.TeamBan_2,
-            EnemyTeamBan_1 = request.EnemyTeamBan_1,
-            EnemyTeamBan_2 = request.EnemyTeamBan_2,
+            TeamBan1Id = request.TeamBan1Id,
+            TeamBan2Id = request.TeamBan2Id,
+            EnemyTeamBan1Id = request.EnemyTeamBan1Id,
+            EnemyTeamBan2Id = request.EnemyTeamBan2Id,
             TeamNotes = request.TeamNotes,
             EnemyTeamNotes = request.EnemyTeamNotes
         };
 
+        if (request.Hero2Id != null && request.Hero2Id != -1)
+        {
+            var hero2 = await db.Hero.Where(h => h.Id == request.Hero2Id).SingleOrDefaultAsync();
+            if (hero2 != null)
+            {
+                newMatch.Hero2Id = hero2.Id;
+            }
+        }
+
+        if (request.Hero3Id != null && request.Hero3Id != -1)
+        {
+            var hero3 = await db.Hero.Where(h => h.Id == request.Hero3Id).SingleOrDefaultAsync();
+            if (hero3 != null)
+            {
+                newMatch.Hero3Id = hero3.Id;
+            }
+        }
+
         db.Match.Add(newMatch);
-        db.SaveChanges();
+        await db.SaveChangesAsync();
         var response = new GenericResponse()
         {
             ok = true,
             ResponseMessage = "Match created successfully"
         };
-        return Ok(JsonSerializer.Serialize(response));
+        return Ok(response);
     }
 
-    [HttpPost("get-by-username")]
-    public async Task<IActionResult> GetByUsername([FromBody] UsernameRequest request)
+    [HttpPost("get-by-user-id")]
+    public async Task<IActionResult> GetByUserId([FromBody] UserRequest request)
     {
         var records = await db.Match
-            .Where(match => match.Username == request.Username)
+            .Where(match => match.UserId == request.UserId)
+            .Include(m => m.Map)
+            .Include(m => m.Hero1)
+            .Include(m => m.Hero2)
+            .Include(m => m.Hero3)
+            .Include(m => m.TeamBan1)
+            .Include(m => m.TeamBan2)
+            .Include(m => m.EnemyTeamBan1)
+            .Include(m => m.EnemyTeamBan2)
+            .Select(m => new MatchDto
+            {
+                Id = m.Id,
+                UserId = m.UserId,
+                SubmitTime = m.SubmitTime,
+                Map = m.Map,
+                Season = m.Season,
+                Rank = m.Rank,
+                RankDivision = m.RankDivision,
+                RankPercentage = m.RankPercentage,
+                Hero1 = m.Hero1,
+                Hero2 = m.Hero2,
+                Hero3 = m.Hero3,
+                MatchResult = m.MatchResult,
+                TeamBan1 = m.TeamBan1,
+                TeamBan2 = m.TeamBan2,
+                EnemyTeamBan1 = m.EnemyTeamBan1,
+                EnemyTeamBan2 = m.EnemyTeamBan2,
+                TeamNotes = m.TeamNotes,
+                EnemyTeamNotes = m.EnemyTeamNotes
+            })
             .ToListAsync();
 
 
-        var response = new MatchListResponse()
-        {
-            Matches = new List<Match>()
-        };
-        
+        var response = new List<MatchDto>();
         if (records.Count != 0)
         {
-            response.Matches = new List<Match>(records);
+            response = new List<MatchDto>(records);
         }
 
-        return Ok(JsonSerializer.Serialize(response));
+        return Ok(response);
     }
 }
 
 public class CreateMatchRequest
 {
-    public string Username { get; set; } = "";
-    public string MapName { get; set; } = "";
+    public int UserId { get; set; } = -1;
+    public int MapId { get; set; } = -1;
     public string Season { get; set; } = "";
     public string Rank { get; set; } = "";
     public int RankDivision { get; set; } = 0;
     public int RankPercentage { get; set; } = 0;
-    public string Hero_1 { get; set; } = "";
-    public string Hero_2 { get; set; } = "";
-    public string Hero_3 { get; set; } = "";
+    public int Hero1Id { get; set; } = -1;
+    public int? Hero2Id { get; set; }
+    public int? Hero3Id { get; set; }
     public string MatchResult { get; set; } = "";
-    public string TeamBan_1 { get; set; } = "";
-    public string TeamBan_2 { get; set; } = "";
-    public string EnemyTeamBan_1 { get; set; } = "";
-    public string EnemyTeamBan_2 { get; set; } = "";
+    public int TeamBan1Id { get; set; } = -1;
+    public int TeamBan2Id { get; set; } = -1;
+    public int EnemyTeamBan1Id { get; set; } = -1;
+    public int EnemyTeamBan2Id { get; set; } = -1;
     public string TeamNotes { get; set; } = "";
     public string EnemyTeamNotes { get; set; } = "";
 }
 
-public class UsernameRequest
+public class MatchDto
 {
-    public string Username { get; set; } = "";
+    public int Id { get; set; } = -1;
+    public int UserId { get; set; } = -1;
+    public string SubmitTime { get; set; } = "";
+    public Map Map { get; set; }
+    public string Season { get; set; }
+    public string Rank { get; set; }
+    public int RankDivision { get; set; }
+    public int RankPercentage { get; set; }
+    public Hero Hero1 { get; set; }
+    public Hero? Hero2 { get; set; }
+    public Hero? Hero3 { get; set; }
+    public string MatchResult { get; set; }
+    public Hero TeamBan1 { get; set; }
+    public Hero TeamBan2 { get; set; }
+    public Hero EnemyTeamBan1 { get; set; }
+    public Hero EnemyTeamBan2 { get; set; }
+    public string? TeamNotes { get; set; }
+    public string? EnemyTeamNotes { get; set; }
 }
 
-public class MatchListResponse
+public class UserRequest
 {
-    public List<Match> Matches { get; set; } = new List<Match>();
+    public int UserId { get; set; } = -1;
 }

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ow_backendAPI.Data;
 using ow_backendAPI.Models;
 
@@ -31,7 +32,22 @@ public class MapController(AppDbContext db) : ControllerBase
         
         db.Map.Add(newMap);
         db.SaveChanges();
-        return Ok(JsonSerializer.Serialize(newMap));
+        return Ok(newMap);
+    }
+    
+    [HttpGet("get-all-maps")]
+    public async Task<IActionResult> GetAllMaps()
+    {
+        var response = await db.Map
+            .Select(m => new FromDatabaseMaps
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Mode = m.Mode,
+                ModeId = m.ModeId
+            })
+            .ToListAsync();
+        return Ok(response);
     }
 }
 
@@ -40,5 +56,18 @@ public class CreateMapRequest
     public string Name { get; set; } = "";
     public string Mode { get; set; } = "";
     public int ModeId { get; set; }
+}
+
+public class FromDatabaseMaps
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Mode { get; set; }
+    public int ModeId { get; set; }
+}
+
+public class FromDatabaseMapsResponse()
+{
+    public List<FromDatabaseMaps> Maps { get; set; }
 }
 

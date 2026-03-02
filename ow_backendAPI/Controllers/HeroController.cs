@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ow_backendAPI.Data;
 using ow_backendAPI.Models;
 
@@ -30,7 +31,22 @@ public class HeroController(AppDbContext db) : ControllerBase
         
         db.Hero.Add(newHero);
         db.SaveChanges();
-        return Ok(JsonSerializer.Serialize(newHero));
+        return Ok(newHero);
+    }
+    
+    [HttpGet("get-all-heroes")]
+    public async Task<IActionResult> GetAllHeroes()
+    {
+        var response = await db.Hero
+            .Select(m => new FromDatabaseHeroes
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Role = m.Role,
+            })
+            .ToListAsync();
+        
+        return Ok(response);
     }
 }
 
@@ -38,5 +54,12 @@ public class CreateHeroRequest
 {
     public string Name { get; set; } = "";
     public string Role { get; set; } = "";
+}
+
+public class FromDatabaseHeroes()
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Role { get; set; }
 }
 
