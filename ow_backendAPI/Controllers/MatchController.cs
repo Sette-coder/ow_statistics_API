@@ -15,7 +15,7 @@ public class MatchController(AppDbContext db) : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateMatchRequest request)
     {
         if (request.UserId == -1) return BadRequest("User Id is Missing");
-        if (request.MapId == null || request.MapId == -1) return BadRequest("Map ID is Missing");
+        if (request.MapId == -1) return BadRequest("Map ID is Missing");
         if (string.IsNullOrWhiteSpace(request.Season)) return BadRequest("Season is Missing");
         if (string.IsNullOrWhiteSpace(request.Rank)) return BadRequest("Rank is Missing");
         if (request.RankDivision == 0) return BadRequest("Rank Division Cannot be 0");
@@ -154,19 +154,19 @@ public class MatchDto
     public int Id { get; set; } = -1;
     public int UserId { get; set; } = -1;
     public string SubmitTime { get; set; } = "";
-    public Map Map { get; set; }
-    public string Season { get; set; }
-    public string Rank { get; set; }
-    public int RankDivision { get; set; }
-    public int RankPercentage { get; set; }
-    public Hero Hero1 { get; set; }
+    public Map Map { get; set; } = new Map();
+    public string Season { get; set; } = "";
+    public string Rank { get; set; } = "";
+    public int RankDivision { get; set; } = -1;
+    public int RankPercentage { get; set; } = -1;
+    public Hero Hero1 { get; set; } = new Hero();
     public Hero? Hero2 { get; set; }
     public Hero? Hero3 { get; set; }
-    public string MatchResult { get; set; }
-    public Hero TeamBan1 { get; set; }
-    public Hero TeamBan2 { get; set; }
-    public Hero EnemyTeamBan1 { get; set; }
-    public Hero EnemyTeamBan2 { get; set; }
+    public string MatchResult { get; set; } = "";
+    public Hero TeamBan1 { get; set; }= new Hero();
+    public Hero TeamBan2 { get; set; }= new Hero();
+    public Hero EnemyTeamBan1 { get; set; }= new Hero();
+    public Hero EnemyTeamBan2 { get; set; }= new Hero();
     public string? TeamNotes { get; set; }
     public string? EnemyTeamNotes { get; set; }
 }

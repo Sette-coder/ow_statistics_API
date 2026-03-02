@@ -55,19 +55,14 @@ public class CreateMapRequest
 {
     public string Name { get; set; } = "";
     public string Mode { get; set; } = "";
-    public int ModeId { get; set; }
+    public int ModeId { get; set; } = -1;
 }
 
 public class FromDatabaseMaps
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Mode { get; set; }
-    public int ModeId { get; set; }
-}
-
-public class FromDatabaseMapsResponse()
-{
-    public List<FromDatabaseMaps> Maps { get; set; }
+    public int Id { get; set; } = -1;
+    public string Name { get; set; } = "";
+    public string Mode { get; set; } = "";
+    public int ModeId { get; set; } = -1;
 }
 

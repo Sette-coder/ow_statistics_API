@@ -8,31 +8,31 @@ namespace ow_backendAPI.Models;
 [Table("game_records", Schema = "data")]
 public class Match
 {
-    public int Id { get; set; }
-    public int UserId { get; set; }
-    public AppUser User { get; set; }
+    public int Id { get; set; } = -1;
+    public int UserId { get; set; } = -1;
+    public AppUser User { get; set; } = new AppUser();
     public string SubmitTime { get; set; } = "";
-    public int MapId { get; set; }
-    public Map Map { get; set; }
+    public int MapId { get; set; } = -1;
+    public Map Map { get; set; } = new Map();
     public string Season { get; set; } = "";
     public string Rank { get; set; } = "";
-    public int RankDivision { get; set; } = 0;
-    public int RankPercentage { get; set; } = 0;
-    public int Hero1Id { get; set; }
-    public Hero Hero1 { get; set; }
+    public int RankDivision { get; set; } = -1;
+    public int RankPercentage { get; set; } = -1;
+    public int Hero1Id { get; set; } = -1;
+    public Hero Hero1 { get; set; } = new Hero();
     public int? Hero2Id { get; set; }
     public Hero? Hero2 { get; set; }
     public int? Hero3Id { get; set; }
     public Hero? Hero3 { get; set; }
     public string MatchResult { get; set; } = "";
-    public int TeamBan1Id { get; set; }
-    public Hero TeamBan1 { get; set; }
-    public int TeamBan2Id { get; set; }
-    public Hero TeamBan2 { get; set; }
-    public int EnemyTeamBan1Id { get; set; }
-    public Hero EnemyTeamBan1 { get; set; }
-    public int EnemyTeamBan2Id { get; set; }
-    public Hero EnemyTeamBan2 { get; set; }
+    public int TeamBan1Id { get; set; } = -1;
+    public Hero TeamBan1 { get; set; } = new Hero();
+    public int TeamBan2Id { get; set; } = -1;
+    public Hero TeamBan2 { get; set; } = new Hero();
+    public int EnemyTeamBan1Id { get; set; } = -1;
+    public Hero EnemyTeamBan1 { get; set; } = new Hero();
+    public int EnemyTeamBan2Id { get; set; } = -1;
+    public Hero EnemyTeamBan2 { get; set; } = new Hero();
     public string? TeamNotes { get; set; } = "";
     public string? EnemyTeamNotes { get; set; } = "";
 }
@@ -52,7 +52,7 @@ public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .IsRequired();
-        
+
 
         builder.Property(x => x.SubmitTime).HasColumnName("submit_time");
 
@@ -69,13 +69,13 @@ public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
         builder.Property(x => x.RankDivision).HasColumnName("rank_division").IsRequired();
         builder.Property(x => x.RankPercentage).HasColumnName("rank_percentage").IsRequired();
         builder.Property(x => x.MatchResult).HasColumnName("match_result").IsRequired();
-        
+
         builder.Property(x => x.Hero1Id).HasColumnName("hero_1_id");
         builder.HasOne(x => x.Hero1)
             .WithMany()
             .HasForeignKey(x => x.Hero1Id)
             .IsRequired();
-        
+
         builder.Property(x => x.Hero2Id).HasColumnName("hero_2_id");
         builder.HasOne(x => x.Hero2)
             .WithMany()
@@ -83,38 +83,38 @@ public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
 
         builder.Property(x => x.Hero3Id)
             .HasColumnName("hero_3_id");
-        
-        
+
+
         builder.HasOne(x => x.Hero3)
             .WithMany()
             .HasForeignKey(x => x.Hero3Id);
-        
-        
+
+
         builder.Property(x => x.TeamBan1Id).HasColumnName("team_ban_1_id");
         builder.HasOne(x => x.TeamBan1)
             .WithMany()
             .HasForeignKey(x => x.TeamBan1Id)
             .IsRequired();
-        
+
         builder.Property(x => x.TeamBan2Id).HasColumnName("team_ban_2_id");
         builder.HasOne(x => x.TeamBan2)
             .WithMany()
             .HasForeignKey(x => x.TeamBan2Id)
             .IsRequired();
-        
-        
+
+
         builder.Property(x => x.EnemyTeamBan1Id).HasColumnName("enemy_team_ban_1_id");
         builder.HasOne(x => x.EnemyTeamBan1)
             .WithMany()
             .HasForeignKey(x => x.EnemyTeamBan1Id)
             .IsRequired();
-        
+
         builder.Property(x => x.EnemyTeamBan2Id).HasColumnName("enemy_team_ban_2_id");
         builder.HasOne(x => x.EnemyTeamBan2)
             .WithMany()
             .HasForeignKey(x => x.EnemyTeamBan2Id)
             .IsRequired();
-        
+
         builder.Property(x => x.TeamNotes).HasColumnName("team_notes");
         builder.Property(x => x.EnemyTeamNotes).HasColumnName("enemy_team_notes");
     }

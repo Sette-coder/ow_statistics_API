@@ -58,8 +58,8 @@ public class CreateHeroRequest
 
 public class FromDatabaseHeroes()
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Role { get; set; }
+    public int Id { get; set; } = -1;
+    public string Name { get; set; } = "";
+    public string Role { get; set; } = "";
 }
 
