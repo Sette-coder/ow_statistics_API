@@ -60,7 +60,7 @@ public class CreateHeroRequest
     public string Role { get; set; } = "";
 }
 
-public class FromDatabaseHeroes()
+public class FromDatabaseHeroes
 {
     public int Id { get; set; } = -1;
     public string Name { get; set; } = "";
