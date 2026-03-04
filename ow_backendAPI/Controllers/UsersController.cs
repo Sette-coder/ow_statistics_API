@@ -1,101 +1,258 @@
-using System.Text.Json;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ow_backendAPI.Data;
 using ow_backendAPI.Models;
+using ow_backendAPI.Repositories;
+using ow_backendAPI.Services;
 
 namespace ow_backendAPI.Controllers;
 
 [ApiController]
 [Route("owstatistics/api/user")]
-public class UsersController(AppDbContext db) : ControllerBase
+public class UsersController(
+    IUserRepository userRepo,
+    IRefreshTokenRepository tokenRepo,
+    JwtService jwtService,
+    IConfiguration config) : ControllerBase
 {
     private readonly PasswordHasher<AppUser> _passwordHasher = new();
 
+    // ─── Create ────────────────────────────────────────────
     [HttpPost("create")]
-    public IActionResult Create([FromBody] CreateUserRequest request)
+    public async Task<IActionResult> CreateAsync([FromBody] CreateUserRequest request)
     {
-        GenericResponse response = new GenericResponse { ok = false, ResponseMessage = "" };
-
         if (string.IsNullOrWhiteSpace(request.Username))
-        {
-            response.ResponseMessage = "Username Missing";
-            return BadRequest(response);
-        }
+            return BadRequest(new GenericResponse { ResponseMessage = "Username missing" });
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return BadRequest(new GenericResponse { ResponseMessage = "Email missing" });
 
         if (string.IsNullOrWhiteSpace(request.Password))
-        {
-            response.ResponseMessage = "Password Missing";
-            return BadRequest(response);
-        }
+            return BadRequest(new GenericResponse { ResponseMessage = "Password missing" });
 
-        if (db.AppUsers.Any(u => u.Email == request.Email))
-        {
-            response.ResponseMessage = "User With this email already exists";
-            return Conflict(response);
-        }
+        if (await userRepo.ExistsByEmailAsync(request.Email))
+            return Conflict(new GenericResponse { ResponseMessage = "Email already in use" });
 
-        if (db.AppUsers.Any(u => u.Username == request.Username))
-        {
-            response.ResponseMessage = "User With this username already exists";
-            return Conflict(response);
-        }
+        if (await userRepo.ExistsAsync(request.Username))
+            return Conflict(new GenericResponse { ResponseMessage = "Username already in use" });
 
         var user = new AppUser
         {
             Username = request.Username,
             Email = request.Email,
-            Role = string.IsNullOrEmpty(request.Role) ? "Client" : request.Role,
+            Role = string.IsNullOrWhiteSpace(request.Role) ? "Client" : request.Role,
         };
+        user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
-        user.Password = _passwordHasher.HashPassword(user, request.Password);
+        await userRepo.CreateAsync(user);
 
-        db.AppUsers.Add(user);
-        db.SaveChanges();
-        response.ResponseMessage = "User Create Successfully";
-        response.ok = true;
-        return Ok(response);
+        return Ok(new GenericResponse { Ok = true, ResponseMessage = "User created successfully" });
     }
 
+    // ─── Login ─────────────────────────────────────────────
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        LoginResponse response = new LoginResponse
+        if (string.IsNullOrWhiteSpace(request.UsernameOrEmail) ||
+            string.IsNullOrWhiteSpace(request.Password))
+            return BadRequest(new GenericResponse { ResponseMessage = "Credentials missing" });
+
+        var user = await userRepo.GetByUsernameOrEmailAsync(request.UsernameOrEmail);
+
+        // Return same message for both "not found" and "wrong password" — avoids user enumeration
+        if (user == null || _passwordHasher.VerifyHashedPassword(
+                user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
+            return Unauthorized(new GenericResponse { ResponseMessage = "Invalid credentials" });
+
+        // Revoke any previous sessions for this user
+        await tokenRepo.RevokeAllUserTokensAsync(user.Id);
+
+        var accessToken = jwtService.GenerateAccessToken(user.Id, user.Username, user.Role);
+        var refreshToken = jwtService.GenerateRefreshToken();
+
+        await tokenRepo.SaveRefreshTokenAsync(new RefreshToken
         {
-            Authorized = false,
-            LoginMessage = ""
-        };
+            UserId = user.Id,
+            Token = refreshToken,
+            ExpiresAt = DateTime.UtcNow.AddDays(
+                double.Parse(config["JwtSettings:RefreshTokenExpirationDays"]!))
+        });
+        
+        _ = userRepo.UpdateLastLoginAsync(user.Id);
 
-        var user = db.AppUsers.FirstOrDefault(u =>
-            u.Username == request.UsernameOrEmail || 
-            u.Email == request.UsernameOrEmail);
+        return Ok(new LoginResponse
+        {
+            Authorized = true,
+            UserId = user.Id,
+            Username = user.Username,
+            UserEmail = user.Email,
+            Role = user.Role,
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            LoginMessage = "Logged in successfully"
+        });
+    }
 
+    // ─── Refresh ───────────────────────────────────────────
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            return BadRequest(new GenericResponse { ResponseMessage = "Refresh token missing" });
+
+        var stored = await tokenRepo.GetValidTokenAsync(request.RefreshToken);
+        if (stored == null)
+            return Unauthorized(new GenericResponse { ResponseMessage = "Session expired, please log in again" });
+
+        var user = await userRepo.GetByIdAsync(stored.UserId);
         if (user == null)
+            return Unauthorized(new GenericResponse { ResponseMessage = "User not found" });
+
+        // Rotate tokens — revoke old, issue new pair
+        await tokenRepo.RevokeTokenAsync(request.RefreshToken);
+
+        var newAccessToken = jwtService.GenerateAccessToken(user.Id, user.Username, user.Role);
+        var newRefreshToken = jwtService.GenerateRefreshToken();
+
+        await tokenRepo.SaveRefreshTokenAsync(new RefreshToken
         {
-            Console.WriteLine("USER NOT FOUND ERROR");
-            response.LoginMessage = "User not found";
-            return Unauthorized(response);
+            UserId = user.Id,
+            Token = newRefreshToken,
+            ExpiresAt = DateTime.UtcNow.AddDays(
+                double.Parse(config["JwtSettings:RefreshTokenExpirationDays"]!))
+        });
+
+        return Ok(new RefreshResponse
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken
+        });
+    }
+
+    // ─── Logout ────────────────────────────────────────────
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout([FromBody] RefreshRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            return BadRequest(new GenericResponse { ResponseMessage = "Refresh token missing" });
+
+        await tokenRepo.RevokeTokenAsync(request.RefreshToken);
+        return Ok(new GenericResponse { Ok = true, ResponseMessage = "Logged out successfully" });
+    }
+
+    // ─── Get own profile ───────────────────────────────────
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> Me()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new GenericResponse { ResponseMessage = "Invalid token" });
+
+        var user = await userRepo.GetByIdAsync(userId);
+        if (user == null)
+            return NotFound(new GenericResponse { ResponseMessage = "User not found" });
+
+        return Ok(new UserProfileResponse
+        {
+            UserId = user.Id,
+            Username = user.Username,
+            UserEmail = user.Email,
+            Role = user.Role
+        });
+    }
+
+    [HttpPut("update/{targetUserId:int}")]
+    [Authorize]
+    public async Task<IActionResult> Update(int targetUserId, [FromBody] UpdateUserRequest request)
+    {
+        // Extract caller identity from JWT
+        var callerIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (callerIdClaim == null || !int.TryParse(callerIdClaim, out var callerId))
+            return Unauthorized(new GenericResponse { ResponseMessage = "Invalid token" });
+
+        var callerRole = User.FindFirst(ClaimTypes.Role)?.Value;
+        var isAdmin = callerRole == "Admin";
+        var isOwner = callerId == targetUserId;
+
+        // Only the owner or an Admin can modify this user
+        if (!isOwner && !isAdmin)
+            return StatusCode(403, new GenericResponse { ResponseMessage = "You can only modify your own account" });
+
+        var target = await userRepo.GetByIdAsync(targetUserId);
+        if (target == null)
+            return NotFound(new GenericResponse { ResponseMessage = "User not found" });
+
+        // ── Username change ────────────────────────────────────
+        if (!string.IsNullOrWhiteSpace(request.Username) &&
+            request.Username != target.Username)
+        {
+            if (await userRepo.ExistsAsync(request.Username))
+                return Conflict(new GenericResponse { ResponseMessage = "Username already in use" });
+
+            target.Username = request.Username;
         }
 
-        var result = _passwordHasher.VerifyHashedPassword(user, user.Password, request.Password);
-
-        if (result == PasswordVerificationResult.Failed)
+        // ── Email change ───────────────────────────────────────
+        if (!string.IsNullOrWhiteSpace(request.Email) &&
+            request.Email != target.Email)
         {
-            response.LoginMessage = "Invalid Password";
-            return Unauthorized(response);
+            if (await userRepo.ExistsByEmailAsync(request.Email))
+                return Conflict(new GenericResponse { ResponseMessage = "Email already in use" });
+
+            target.Email = request.Email;
         }
 
-        response.Authorized = true;
-        response.UserId = user.Id;
-        response.Username = user.Username;
-        response.UserEmail = user.Email;
-        response.Role = user.Role;
-        response.LoginMessage = "Logged in!";
+        // ── Password change ────────────────────────────────────
+        if (!string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            // Non-admins must confirm their current password to change it
+            if (!isAdmin)
+            {
+                if (string.IsNullOrWhiteSpace(request.CurrentPassword))
+                    return BadRequest(new GenericResponse
+                        { ResponseMessage = "Current password required to set a new one" });
 
-        return Ok(response);
+                var verification = _passwordHasher.VerifyHashedPassword(
+                    target, target.PasswordHash, request.CurrentPassword);
+
+                if (verification == PasswordVerificationResult.Failed)
+                    return Unauthorized(new GenericResponse { ResponseMessage = "Current password is incorrect" });
+            }
+
+            target.PasswordHash = _passwordHasher.HashPassword(target, request.NewPassword);
+
+            // Invalidate all existing sessions — forces re-login with new password
+            await tokenRepo.RevokeAllUserTokensAsync(target.Id);
+        }
+
+        // ── Role change — Admin only ───────────────────────────
+        if (!string.IsNullOrWhiteSpace(request.Role))
+        {
+            if (!isAdmin)
+                return StatusCode(403, new GenericResponse { ResponseMessage = "Only admins can change roles" });
+
+            target.Role = request.Role;
+        }
+
+        await userRepo.UpdateAsync(target);
+
+        return Ok(new UpdateUserResponse
+        {
+            Ok = true,
+            ResponseMessage = "User updated successfully",
+            UserId = target.Id,
+            Username = target.Username,
+            UserEmail = target.Email,
+            Role = target.Role,
+            SessionsRevoked = !string.IsNullOrWhiteSpace(request.NewPassword)
+        });
     }
 }
 
+// ─── Requests ──────────────────────────────────────────────
 public class CreateUserRequest
 {
     public string Username { get; set; } = "";
@@ -110,6 +267,18 @@ public class LoginRequest
     public string Password { get; set; } = "";
 }
 
+public class RefreshRequest
+{
+    public string RefreshToken { get; set; } = "";
+}
+
+// ─── Responses ─────────────────────────────────────────────
+public class GenericResponse
+{
+    public bool Ok { get; set; } = false;
+    public string ResponseMessage { get; set; } = "";
+}
+
 public class LoginResponse
 {
     public bool Authorized { get; set; } = false;
@@ -117,11 +286,41 @@ public class LoginResponse
     public string Username { get; set; } = "";
     public string UserEmail { get; set; } = "";
     public string Role { get; set; } = "";
+    public string AccessToken { get; set; } = "";
+    public string RefreshToken { get; set; } = "";
     public string LoginMessage { get; set; } = "";
 }
 
-public class GenericResponse
+public class RefreshResponse
 {
-    public bool ok { get; set; } = false;
+    public string AccessToken { get; set; } = "";
+    public string RefreshToken { get; set; } = "";
+}
+
+public class UserProfileResponse
+{
+    public int UserId { get; set; }
+    public string Username { get; set; } = "";
+    public string UserEmail { get; set; } = "";
+    public string Role { get; set; } = "";
+}
+
+public class UpdateUserRequest
+{
+    public string? Username { get; set; } // null = no change
+    public string? Email { get; set; } // null = no change
+    public string? CurrentPassword { get; set; } // required only when changing password as non-admin
+    public string? NewPassword { get; set; } // null = no change
+    public string? Role { get; set; } // null = no change, Admin only
+}
+
+public class UpdateUserResponse
+{
+    public bool Ok { get; set; } = false;
     public string ResponseMessage { get; set; } = "";
+    public int UserId { get; set; }
+    public string Username { get; set; } = "";
+    public string UserEmail { get; set; } = "";
+    public string Role { get; set; } = "";
+    public bool SessionsRevoked { get; set; } = false; // tells Unity to force re-login
 }

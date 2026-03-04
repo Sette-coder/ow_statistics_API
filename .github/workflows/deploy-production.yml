@@ -55,6 +55,10 @@ jobs:
             Database__Password=${{ secrets.DB_PASSWORD }}
             Database__Name=${{ secrets.DB_NAME }}
             Database__Username=${{ secrets.DB_USERNAME }}
+            JwtSettings__SecretKey=${{ secrets.JWT_SECRETKEY }}
+            Admin__Username=mimmo
+            Admin__Email=mimmo@mimmo.com
+            Admin__Password=${{ secrets.APP_USER_ADMIN_PASSWORD }}
             ASPNETCORE_ENVIRONMENT=Production
             ASPNETCORE_URLS=http://0.0.0.0:80;https://0.0.0.0:443
             EOF
