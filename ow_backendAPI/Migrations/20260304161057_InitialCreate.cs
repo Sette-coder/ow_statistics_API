@@ -24,9 +24,10 @@ namespace ow_backendAPI.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    role = table.Column<string>(type: "text", nullable: false),
+                    role = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Client"),
                     password_hash = table.Column<string>(type: "text", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    last_login = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,8 +41,8 @@ namespace ow_backendAPI.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    name = table.Column<string>(type: "text", nullable: false),
-                    role = table.Column<string>(type: "text", nullable: false)
+                    name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    role = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,8 +56,8 @@ namespace ow_backendAPI.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    name = table.Column<string>(type: "text", nullable: false),
-                    mode = table.Column<string>(type: "text", nullable: false),
+                    name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    mode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     mode_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -74,12 +75,19 @@ namespace ow_backendAPI.Migrations
                     user_id = table.Column<int>(type: "integer", nullable: false),
                     token = table.Column<string>(type: "text", nullable: false),
                     expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     revoked_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_refresh_tokens", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_refresh_tokens_app_users_user_id",
+                        column: x => x.user_id,
+                        principalSchema: "data",
+                        principalTable: "app_users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -90,22 +98,22 @@ namespace ow_backendAPI.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     user_id = table.Column<int>(type: "integer", nullable: false),
-                    submit_time = table.Column<string>(type: "text", nullable: false),
                     map_id = table.Column<int>(type: "integer", nullable: false),
-                    season = table.Column<string>(type: "text", nullable: false),
-                    rank = table.Column<string>(type: "text", nullable: false),
+                    submit_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    season = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    rank = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     rank_division = table.Column<int>(type: "integer", nullable: false),
                     rank_percentage = table.Column<int>(type: "integer", nullable: false),
                     hero_1_id = table.Column<int>(type: "integer", nullable: false),
-                    hero_2_id = table.Column<int>(type: "integer", nullable: true),
-                    hero_3_id = table.Column<int>(type: "integer", nullable: true),
-                    match_result = table.Column<string>(type: "text", nullable: false),
                     team_ban_1_id = table.Column<int>(type: "integer", nullable: false),
                     team_ban_2_id = table.Column<int>(type: "integer", nullable: false),
                     enemy_team_ban_1_id = table.Column<int>(type: "integer", nullable: false),
                     enemy_team_ban_2_id = table.Column<int>(type: "integer", nullable: false),
-                    team_notes = table.Column<string>(type: "text", nullable: true),
-                    enemy_team_notes = table.Column<string>(type: "text", nullable: true)
+                    match_result = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    hero_2_id = table.Column<int>(type: "integer", nullable: true),
+                    hero_3_id = table.Column<int>(type: "integer", nullable: true),
+                    team_notes = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    enemy_team_notes = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -240,6 +248,12 @@ namespace ow_backendAPI.Migrations
                 schema: "data",
                 table: "game_records",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_refresh_tokens_user_id",
+                schema: "data",
+                table: "refresh_tokens",
+                column: "user_id");
         }
 
         /// <inheritdoc />
@@ -254,15 +268,15 @@ namespace ow_backendAPI.Migrations
                 schema: "data");
 
             migrationBuilder.DropTable(
-                name: "app_users",
-                schema: "data");
-
-            migrationBuilder.DropTable(
                 name: "hero_list",
                 schema: "data");
 
             migrationBuilder.DropTable(
                 name: "map_list",
+                schema: "data");
+
+            migrationBuilder.DropTable(
+                name: "app_users",
                 schema: "data");
         }
     }

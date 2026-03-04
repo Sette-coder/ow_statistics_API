@@ -33,14 +33,20 @@ namespace ow_backendAPI.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("email");
+
+                    b.Property<DateTime>("LastLogin")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_login");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -49,7 +55,10 @@ namespace ow_backendAPI.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Client")
                         .HasColumnName("role");
 
                     b.Property<string>("Username")
@@ -80,12 +89,14 @@ namespace ow_backendAPI.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("name");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("role");
 
                     b.HasKey("Id");
@@ -104,7 +115,8 @@ namespace ow_backendAPI.Migrations
 
                     b.Property<string>("Mode")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("mode");
 
                     b.Property<int>("ModeId")
@@ -113,7 +125,8 @@ namespace ow_backendAPI.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
@@ -139,7 +152,8 @@ namespace ow_backendAPI.Migrations
                         .HasColumnName("enemy_team_ban_2_id");
 
                     b.Property<string>("EnemyTeamNotes")
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("enemy_team_notes");
 
                     b.Property<int>("Hero1Id")
@@ -160,12 +174,14 @@ namespace ow_backendAPI.Migrations
 
                     b.Property<string>("MatchResult")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
                         .HasColumnName("match_result");
 
                     b.Property<string>("Rank")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("rank");
 
                     b.Property<int>("RankDivision")
@@ -178,12 +194,12 @@ namespace ow_backendAPI.Migrations
 
                     b.Property<string>("Season")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("season");
 
-                    b.Property<string>("SubmitTime")
-                        .IsRequired()
-                        .HasColumnType("text")
+                    b.Property<DateTime>("SubmitTime")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("submit_time");
 
                     b.Property<int>("TeamBan1Id")
@@ -195,7 +211,8 @@ namespace ow_backendAPI.Migrations
                         .HasColumnName("team_ban_2_id");
 
                     b.Property<string>("TeamNotes")
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("team_notes");
 
                     b.Property<int>("UserId")
@@ -235,8 +252,10 @@ namespace ow_backendAPI.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
@@ -256,6 +275,8 @@ namespace ow_backendAPI.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("refresh_tokens", "data");
                 });
@@ -329,6 +350,15 @@ namespace ow_backendAPI.Migrations
                     b.Navigation("TeamBan2");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ow_backendAPI.Models.RefreshToken", b =>
+                {
+                    b.HasOne("ow_backendAPI.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

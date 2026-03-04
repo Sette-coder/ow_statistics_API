@@ -8,37 +8,56 @@ namespace ow_backendAPI.Models;
 [Table("app_users", Schema = "data")]
 public class AppUser
 {
-    [Key] [Column("id")] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]public int Id { get; set; }
-
-    [Required]
-    [MaxLength(50)]
-    [Column("username")]public string Username { get; set; } = "";
-
-    [Required]
-    [MaxLength(100)]
-    [Column("email")] public string Email { get; set; } = "";
-
-    [Required]
-    [Column("role")] public string Role { get; set; } = "";
-
-    [Required]
-    [Column("password_hash")] public string PasswordHash { get; set; } = "";
-    
-    [Column("created_at")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public int      Id           { get; set; }
+    public string   Username     { get; set; } = "";
+    public string   Email        { get; set; } = "";
+    public string   Role         { get; set; } = "";
+    public string   PasswordHash { get; set; } = "";
+    public DateTime CreatedAt    { get; set; } = DateTime.UtcNow;
+    public DateTime LastLogin    { get; set; } = DateTime.UtcNow;
 }
 
 public class AppUserEntityConfiguration : IEntityTypeConfiguration<AppUser>
 {
     public void Configure(EntityTypeBuilder<AppUser> builder)
     {
-        builder.ToTable("app_users", schema:"data");
+        builder.ToTable("app_users", schema: "data");
+
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Id).HasColumnName("id");
-        builder.Property(x => x.Username).HasColumnName("username").IsRequired();
-        builder.Property(x => x.Email).HasColumnName("email").IsRequired();
-        builder.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired();
-        builder.Property(x => x.CreatedAt).HasColumnName("created_at");
+
+        builder.Property(x => x.Id)
+            .HasColumnName("id")
+            .ValueGeneratedOnAdd();
+
+        builder.Property(x => x.Username)
+            .HasColumnName("username")
+            .HasMaxLength(50)
+            .IsRequired();
+
+        builder.Property(x => x.Email)
+            .HasColumnName("email")
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(x => x.Role)
+            .HasColumnName("role")
+            .HasMaxLength(20)
+            .IsRequired()
+            .HasDefaultValue("Client");
+
+        builder.Property(x => x.PasswordHash)
+            .HasColumnName("password_hash")
+            .IsRequired();
+
+        builder.Property(x => x.CreatedAt)
+            .HasColumnName("created_at")
+            .HasColumnType("timestamp with time zone")
+            .HasDefaultValueSql("now()");
+
+        builder.Property(x => x.LastLogin)
+            .HasColumnName("last_login")
+            .HasColumnType("timestamp with time zone");
+
         builder.HasIndex(x => x.Username).IsUnique();
         builder.HasIndex(x => x.Email).IsUnique();
     }

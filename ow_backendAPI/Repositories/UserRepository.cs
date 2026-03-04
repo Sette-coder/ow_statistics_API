@@ -22,6 +22,7 @@ public interface IUserRepository
     Task CreateAsync(AppUser user);
     
     Task UpdateAsync(AppUser user);
+    Task UpdateLastLoginAsync(int userId);
 }
 
 public class UserRepository : IUserRepository
@@ -53,6 +54,15 @@ public class UserRepository : IUserRepository
             .FirstOrDefaultAsync(u =>
                 u.Username == usernameOrEmail ||
                 u.Email == usernameOrEmail);
+    
+    public async Task UpdateLastLoginAsync(int userId)
+    {
+        var user = await _db.AppUsers.FindAsync(userId);
+        if (user == null) return;
+
+        user.LastLogin = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+    }
     
     public async Task UpdateAsync(AppUser user)
     {

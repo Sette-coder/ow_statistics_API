@@ -105,7 +105,7 @@ public static class StaticDataSeeder
     // ─── Maps ──────────────────────────────────────────────
     private static async Task SeedMapsAsync(AppDbContext db)
     {
-        var existingNames = db.Map
+        var existingNames = db.Maps
             .Select(m => m.Name)
             .ToHashSet();
 
@@ -125,7 +125,7 @@ public static class StaticDataSeeder
             return;
         }
 
-        db.Map.AddRange(toInsert);
+        db.Maps.AddRange(toInsert);
         await db.SaveChangesAsync();
         Console.WriteLine($"[StaticDataSeeder] ✅ Seeded {toInsert.Count} maps.");
     }
@@ -133,7 +133,7 @@ public static class StaticDataSeeder
     // ─── Heroes ────────────────────────────────────────────
     private static async Task SeedHeroesAsync(AppDbContext db)
     {
-        var existingNames = db.Hero
+        var existingNames = db.Heroes
             .Select(h => h.Name)
             .ToHashSet();
 
@@ -147,7 +147,7 @@ public static class StaticDataSeeder
             return;
         }
 
-        db.Hero.AddRange(toInsert);
+        db.Heroes.AddRange(toInsert);
         await db.SaveChangesAsync();
         Console.WriteLine($"[StaticDataSeeder] ✅ Seeded {toInsert.Count} heroes.");
     }

@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ow_backendAPI.Data;
@@ -7,9 +7,11 @@ using ow_backendAPI.Models;
 namespace ow_backendAPI.Controllers;
 [ApiController]
 [Route("owstatistics/api/map")]
+
 public class MapController(AppDbContext db) : ControllerBase
 {
     [HttpPost("create")]
+    [Authorize(Roles = "Admin")]
     public IActionResult Create([FromBody] CreateMapRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name))
@@ -20,7 +22,7 @@ public class MapController(AppDbContext db) : ControllerBase
         {
             return BadRequest("Map Mode cannot be Default");
         }
-        if (db.Map.Any(u => u.Name == request.Name))
+        if (db.Maps.Any(u => u.Name == request.Name))
             return Conflict("Map already exists");
 
         var newMap = new Map
@@ -30,15 +32,16 @@ public class MapController(AppDbContext db) : ControllerBase
             ModeId = request.ModeId
         };
         
-        db.Map.Add(newMap);
+        db.Maps.Add(newMap);
         db.SaveChanges();
         return Ok(newMap);
     }
     
     [HttpGet("get-all-maps")]
+    [Authorize]
     public async Task<IActionResult> GetAllMaps()
     {
-        var response = await db.Map
+        var response = await db.Maps
             .Select(m => new FromDatabaseMaps
             {
                 Id = m.Id,

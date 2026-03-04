@@ -7,6 +7,7 @@ using Npgsql;
 using ow_backendAPI;
 using ow_backendAPI.Data;
 using ow_backendAPI.Repositories;
+using ow_backendAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +67,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ─── Repositories ──────────────────────────────────────────
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+// ─── Services ──────────────────────────────────────────────
+builder.Services.AddScoped<JwtService>();
 
 // ─── CORS ──────────────────────────────────────────────────
 builder.Services.AddCors(options =>

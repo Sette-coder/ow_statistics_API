@@ -78,6 +78,8 @@ public class UsersController(
             ExpiresAt = DateTime.UtcNow.AddDays(
                 double.Parse(config["JwtSettings:RefreshTokenExpirationDays"]!))
         });
+        
+        _ = userRepo.UpdateLastLoginAsync(user.Id);
 
         return Ok(new LoginResponse
         {
@@ -145,7 +147,7 @@ public class UsersController(
     [Authorize]
     public async Task<IActionResult> Me()
     {
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
             return Unauthorized(new GenericResponse { ResponseMessage = "Invalid token" });
 

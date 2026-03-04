@@ -8,33 +8,39 @@ namespace ow_backendAPI.Models;
 [Table("game_records", Schema = "data")]
 public class Match
 {
-    public int Id { get; set; } = -1;
+    public int Id { get; set; }
     public int UserId { get; set; } = -1;
-    public AppUser User { get; set; } = new AppUser();
-    public string SubmitTime { get; set; } = "";
     public int MapId { get; set; } = -1;
-    public Map Map { get; set; } = new Map();
+    public DateTime SubmitTime { get; set; } = DateTime.UtcNow;
     public string Season { get; set; } = "";
     public string Rank { get; set; } = "";
     public int RankDivision { get; set; } = -1;
     public int RankPercentage { get; set; } = -1;
     public int Hero1Id { get; set; } = -1;
-    public Hero Hero1 { get; set; } = new Hero();
-    public int? Hero2Id { get; set; }
-    public Hero? Hero2 { get; set; }
-    public int? Hero3Id { get; set; }
-    public Hero? Hero3 { get; set; }
-    public string MatchResult { get; set; } = "";
     public int TeamBan1Id { get; set; } = -1;
-    public Hero TeamBan1 { get; set; } = new Hero();
     public int TeamBan2Id { get; set; } = -1;
-    public Hero TeamBan2 { get; set; } = new Hero();
     public int EnemyTeamBan1Id { get; set; } = -1;
-    public Hero EnemyTeamBan1 { get; set; } = new Hero();
     public int EnemyTeamBan2Id { get; set; } = -1;
-    public Hero EnemyTeamBan2 { get; set; } = new Hero();
-    public string? TeamNotes { get; set; } = "";
-    public string? EnemyTeamNotes { get; set; } = "";
+    public string MatchResult { get; set; } = "";
+
+    // Optional fields
+    public int? Hero2Id { get; set; }
+    public int? Hero3Id { get; set; }
+    public string? TeamNotes { get; set; }
+    public string? EnemyTeamNotes { get; set; }
+
+    // Navigation properties — null! tells compiler EF Core will always load these
+    public AppUser User { get; set; } = null!;
+    public Map Map { get; set; } = null!;
+    public Hero Hero1 { get; set; } = null!;
+    public Hero TeamBan1 { get; set; } = null!;
+    public Hero TeamBan2 { get; set; } = null!;
+    public Hero EnemyTeamBan1 { get; set; } = null!;
+    public Hero EnemyTeamBan2 { get; set; } = null!;
+
+    // Optional navigation properties — null because they may not exist
+    public Hero? Hero2 { get; set; }
+    public Hero? Hero3 { get; set; }
 }
 
 public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
@@ -45,7 +51,7 @@ public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id).HasColumnName("id");
+        builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
         builder.Property(x => x.UserId).HasColumnName("user_id");
         builder.HasOne(x => x.User)
@@ -54,7 +60,10 @@ public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
             .IsRequired();
 
 
-        builder.Property(x => x.SubmitTime).HasColumnName("submit_time");
+        builder.Property(x => x.SubmitTime)
+            .HasColumnName("submit_time")
+            .HasColumnType("timestamp with time zone");
+        
 
         builder.Property(x => x.MapId).HasColumnName("map_id");
         builder.HasOne(x => x.Map)
@@ -62,13 +71,13 @@ public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
             .HasForeignKey(x => x.MapId)
             .IsRequired();
 
-        builder.Property(x => x.Season).HasColumnName("season");
+        builder.Property(x => x.Season).HasColumnName("season").HasMaxLength(20);
 
-        builder.Property(x => x.Rank).HasColumnName("rank");
+        builder.Property(x => x.Rank).HasColumnName("rank").HasMaxLength(20);
 
         builder.Property(x => x.RankDivision).HasColumnName("rank_division").IsRequired();
         builder.Property(x => x.RankPercentage).HasColumnName("rank_percentage").IsRequired();
-        builder.Property(x => x.MatchResult).HasColumnName("match_result").IsRequired();
+        builder.Property(x => x.MatchResult).HasColumnName("match_result").HasMaxLength(10).IsRequired();
 
         builder.Property(x => x.Hero1Id).HasColumnName("hero_1_id");
         builder.HasOne(x => x.Hero1)
@@ -115,7 +124,7 @@ public class MatchEntityConfiguration : IEntityTypeConfiguration<Match>
             .HasForeignKey(x => x.EnemyTeamBan2Id)
             .IsRequired();
 
-        builder.Property(x => x.TeamNotes).HasColumnName("team_notes");
-        builder.Property(x => x.EnemyTeamNotes).HasColumnName("enemy_team_notes");
+        builder.Property(x => x.TeamNotes).HasColumnName("team_notes").HasMaxLength(100);
+        builder.Property(x => x.EnemyTeamNotes).HasColumnName("enemy_team_notes").HasMaxLength(100);
     }
 }
