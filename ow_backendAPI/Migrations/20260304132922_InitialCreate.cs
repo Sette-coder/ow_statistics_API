@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -6,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ow_backendAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,10 +22,11 @@ namespace ow_backendAPI.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    username = table.Column<string>(type: "text", nullable: false),
-                    email = table.Column<string>(type: "text", nullable: false),
+                    username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     role = table.Column<string>(type: "text", nullable: false),
-                    password = table.Column<string>(type: "text", nullable: false)
+                    password_hash = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,6 +62,24 @@ namespace ow_backendAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_map_list", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "refresh_tokens",
+                schema: "data",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    user_id = table.Column<int>(type: "integer", nullable: false),
+                    token = table.Column<string>(type: "text", nullable: false),
+                    expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    revoked_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_refresh_tokens", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -154,6 +174,20 @@ namespace ow_backendAPI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_app_users_email",
+                schema: "data",
+                table: "app_users",
+                column: "email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_app_users_username",
+                schema: "data",
+                table: "app_users",
+                column: "username",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_game_records_enemy_team_ban_1_id",
                 schema: "data",
                 table: "game_records",
@@ -213,6 +247,10 @@ namespace ow_backendAPI.Migrations
         {
             migrationBuilder.DropTable(
                 name: "game_records",
+                schema: "data");
+
+            migrationBuilder.DropTable(
+                name: "refresh_tokens",
                 schema: "data");
 
             migrationBuilder.DropTable(

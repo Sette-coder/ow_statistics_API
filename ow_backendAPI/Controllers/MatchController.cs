@@ -76,7 +76,7 @@ public class MatchController(AppDbContext db) : ControllerBase
         await db.SaveChangesAsync();
         var response = new GenericResponse()
         {
-            ok = true,
+            Ok = true,
             ResponseMessage = "Match created successfully"
         };
         return Ok(response);
